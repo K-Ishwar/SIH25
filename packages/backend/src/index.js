@@ -3,6 +3,9 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import 'dotenv/config';
 import pool from './db.js';
+import authRouter from './routes/auth.js';
+import reportsRouter from './routes/reports.js';
+import departmentsRouter from './routes/departments.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -14,6 +17,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+
+// API Routes
+app.use('/api/auth', authRouter);
+app.use('/api/reports', reportsRouter);
+app.use('/api/departments', departmentsRouter);
 
 // Test database connection
 app.get('/db-test', async (req, res) => {

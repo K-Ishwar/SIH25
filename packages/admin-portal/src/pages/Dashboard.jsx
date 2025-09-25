@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = '/api'; // Use relative path for proxy
 
 const Dashboard = () => {
   const [reports, setReports] = useState([]);

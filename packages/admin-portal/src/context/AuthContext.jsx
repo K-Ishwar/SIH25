@@ -4,8 +4,7 @@ import { jwtDecode } from 'jwt-decode'; // We'll need this to check the user's r
 
 export const AuthContext = createContext();
 
-// NOTE: For development, replace with your local IP address if needed.
-const API_URL = 'http://localhost:3001/api';
+const API_URL = '/api'; // Use relative path for proxy
 
 export const AuthProvider = ({ children }) => {
   const [authToken, setAuthToken] = useState(localStorage.getItem('token'));

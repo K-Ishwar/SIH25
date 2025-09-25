@@ -46,6 +46,22 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   GET api/reports/my-reports
+// @desc    Get reports for the logged-in user
+// @access  Private
+router.get('/my-reports', auth, async (req, res) => {
+    try {
+      const reports = await pool.query(
+        'SELECT id, title, status, created_at FROM reports WHERE user_id = $1 ORDER BY created_at DESC',
+        [req.user.id]
+      );
+      res.json(reports.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error while getting user reports' });
+    }
+  });
+
 // @route   GET api/reports/:id
 // @desc    Get a single report by ID
 // @access  Public

@@ -74,7 +74,10 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' },
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+            console.error('Error signing JWT:', err);
+            return res.status(500).json({ message: 'Server error while generating token.' });
+        }
         res.json({ token });
       }
     );

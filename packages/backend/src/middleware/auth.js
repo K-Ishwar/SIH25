@@ -28,4 +28,12 @@ function adminAuth(req, res, next) {
   }
 }
 
-export { auth, adminAuth };
+function staffOrAdminAuth(req, res, next) {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'staff')) {
+      next();
+    } else {
+      res.status(403).json({ message: 'Access denied. Staff or Admin role required.' });
+    }
+  }
+
+export { auth, adminAuth, staffOrAdminAuth };

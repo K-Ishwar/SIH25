@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import pool from '../db.js';
-import { auth } from '../middleware/auth.js';
+import { auth, staffOrAdminAuth } from '../middleware/auth.js';
 import { parser } from '../cloudinary.js';
 
 const router = Router();
@@ -79,5 +79,58 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error while getting report' });
   }
 });
+
+// @route   PUT api/reports/:id
+// @desc    Update a report's status or assignment
+// @access  Staff/Admin
+router.put('/:id', [auth, staffOrAdminAuth], async (req, res) => {
+    const { id } = req.params;
+    const { status, assigned_department_id } = req.body;
+    const adminUserId = req.user.id;
+
+    if (!status && !assigned_department_id) {
+      return res.status(400).json({ message: 'No update data provided.' });
+    }
+
+    try {
+      // Build the update query dynamically
+      const fields = [];
+      const values = [];
+      let query_parts = [];
+      let value_index = 1;
+
+      if (status) {
+        query_parts.push(`status = $${value_index++}`);
+        values.push(status);
+      }
+      if (assigned_department_id) {
+        query_parts.push(`assigned_department_id = $${value_index++}`);
+        values.push(assigned_department_id);
+      }
+
+      values.push(id);
+
+      const updateQuery = `UPDATE reports SET ${query_parts.join(', ')}, updated_at = NOW() WHERE id = $${value_index} RETURNING *`;
+
+      const updatedReport = await pool.query(updateQuery, values);
+
+      if (updatedReport.rows.length === 0) {
+        return res.status(404).json({ message: 'Report not found' });
+      }
+
+      // Log the update in the report_updates table
+      if (status) {
+        await pool.query(
+          'INSERT INTO report_updates (report_id, user_id, status_change) VALUES ($1, $2, $3)',
+          [id, adminUserId, status]
+        );
+      }
+
+      res.json(updatedReport.rows[0]);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error while updating report' });
+    }
+  });
 
 export default router;
